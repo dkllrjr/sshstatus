@@ -48,15 +48,15 @@ var status safeStatus
 
 func main() {
 
-	config_file := "config.yml"
+	config_file := os.Args[1]
 	config := GetConfig(config_file)
 
-	port := os.Args[1]
+	port := os.Args[2]
 
-	check_timeout, err := strconv.Atoi(os.Args[2])
+	check_timeout, err := strconv.Atoi(os.Args[3])
 	LogError(err)
 
-	tcp_timeout, err := strconv.Atoi(os.Args[3])
+	tcp_timeout, err := strconv.Atoi(os.Args[4])
 	LogError(err)
 
 	go updateServer(config, check_timeout, tcp_timeout)

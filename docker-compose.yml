@@ -6,3 +6,5 @@ services:
     restart: unless-stopped
     ports:
       - 9429:9429
+    volumes:
+      - "./config.yml:/app/config.yml"
