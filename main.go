@@ -3,16 +3,68 @@ package main
 import (
     "fmt"
     "net/http"
+	"os"
+	"strconv"
+	"time"
+	"sync"
 )
 
-func hello(w http.ResponseWriter, req *http.Request) {
+func upDown(writer http.ResponseWriter, request *http.Request) {
+	
+	status.mu.Lock()
 
-    fmt.Fprintf(w, "hello\n")
+	if status.status {
+		fmt.Fprintf(writer, "up\n")
+	} else {
+		fmt.Fprintf(writer, "down\n")
+	}
+
+	status.mu.Unlock()
+
 }
+
+func updateServer(config map[string]Server, check_timeout int, tcp_timeout int) {
+
+	for {
+
+		status.mu.Lock()
+
+		for _, server := range config {
+			status.status = IsUp(server.IP, server.PORT, tcp_timeout)
+		}
+
+		status.mu.Unlock()
+		time.Sleep(time.Duration(check_timeout) * time.Second)
+
+	}
+}
+
+type safeStatus struct {
+	mu sync.Mutex
+	status bool
+}
+
+var status safeStatus
 
 func main() {
 
-    http.HandleFunc("/hello", hello)
+	config_file := "config.yml"
+	config := GetConfig(config_file)
 
-    http.ListenAndServe(":8090", nil)
+	port := os.Args[1]
+
+	check_timeout, err := strconv.Atoi(os.Args[2])
+	LogError(err)
+
+	tcp_timeout, err := strconv.Atoi(os.Args[3])
+	LogError(err)
+
+	go updateServer(config, check_timeout, tcp_timeout)
+
+	for name, _ := range config {
+		http.HandleFunc("/" + name, upDown)
+	}
+
+	http.ListenAndServe(":" + port, nil)
+
 }
