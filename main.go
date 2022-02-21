@@ -30,7 +30,7 @@ func updateServer(config map[string]Server, check_timeout int, tcp_timeout int) 
 		status.mu.Lock()
 
 		for _, server := range config {
-			status.status = IsUp(server.IP, server.PORT, tcp_timeout)
+			status.status = IsUp(server.HOST, server.PORT, tcp_timeout)
 		}
 
 		status.mu.Unlock()

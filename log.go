@@ -12,10 +12,16 @@ func LogError(err error) {
 
 }
 
-func LogNotError(err error) {
+func LogNoError(err error) {
 	
 	if err != nil {
 		log.Print(err)
 	}
+
+}
+
+func LogNotError(note string) {
+	
+	log.Print(note)
 
 }

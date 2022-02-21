@@ -6,7 +6,7 @@ import (
 )
 
 type Server struct {
-	IP string `yaml:"ip"`
+	HOST string `yaml:"host"`
 	PORT string `yaml:"port"`
 }
 

@@ -1,0 +1,8 @@
+version: '3'
+
+services:
+  sshstatus:
+    image: dkllrjr/sshstatus:latest
+    restart: unless-stopped
+    ports:
+      - 9429:9429
