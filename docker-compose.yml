@@ -8,6 +8,3 @@ services:
       - 9429:9429
     volumes:
       - "./config.yml:/app/config.yml"
-    environment:
-      CHECK_TIMEOUT: $CHECK_TIMEOUT
-      TCP_TIMEOUT: $TCP_TIMEOUT
