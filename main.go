@@ -9,28 +9,18 @@ import (
 	"sync"
 )
 
-func upDown(writer http.ResponseWriter, request *http.Request) {
-	
-	status.mu.Lock()
-
-	if status.status {
-		fmt.Fprintf(writer, "up\n")
-	} else {
-		fmt.Fprintf(writer, "down\n")
-	}
-
-	status.mu.Unlock()
-
-}
-
 func updateServer(config map[string]Server, check_timeout int, tcp_timeout int) {
 
 	for {
 
 		status.mu.Lock()
 
-		for _, server := range config {
-			status.status = IsUp(server.HOST, server.PORT, tcp_timeout)
+		for name, server := range config {
+			if IsUp(server.HOST, server.PORT, tcp_timeout) {
+				status.updown[name] = "up"
+			} else {
+				status.updown[name] = "down"
+			}
 		}
 
 		status.mu.Unlock()
@@ -40,13 +30,15 @@ func updateServer(config map[string]Server, check_timeout int, tcp_timeout int) 
 }
 
 type safeStatus struct {
-	mu sync.Mutex
-	status bool
+	mu sync.RWMutex
+	updown map[string]string
 }
 
 var status safeStatus
 
 func main() {
+
+	status.updown = make(map[string]string)
 
 	config_file := os.Args[1]
 	config := GetConfig(config_file)
@@ -62,7 +54,14 @@ func main() {
 	go updateServer(config, check_timeout, tcp_timeout)
 
 	for name, _ := range config {
-		http.HandleFunc("/" + name, upDown)
+		name := name
+
+		http.HandleFunc("/" + name, func(writer http.ResponseWriter, request *http.Request) {
+	
+			status.mu.RLock()
+			defer status.mu.RUnlock()
+			fmt.Fprintf(writer, status.updown[name] + "\n")
+		})
 	}
 
 	http.ListenAndServe(":" + port, nil)
