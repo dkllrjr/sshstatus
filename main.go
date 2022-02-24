@@ -16,6 +16,8 @@ func updateServer(config map[string]Server, check_timeout int, tcp_timeout int) 
 		status.mu.Lock()
 
 		for name, server := range config {
+			name := name
+			server := server
 			if IsUp(server.HOST, server.PORT, tcp_timeout) {
 				status.updown[name] = "up"
 			} else {
